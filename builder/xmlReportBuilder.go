@@ -147,7 +147,7 @@ func (x *XmlBuilder) getSpecContent(result *gauge_messages.ProtoSpecResult) {
 			if test.GetItemType() == gauge_messages.ProtoItem_Scenario {
 				x.getScenarioContent(result, test.GetScenario(), &ts)
 			} else if test.GetItemType() == gauge_messages.ProtoItem_TableDrivenScenario {
-				x.getTableDrivenScenarioContent(result, test.GetTableDrivenScenario(), &ts)
+				x.getTableDrivenScenarioContent(result, test, &ts)
 			}
 		}
 	}
@@ -205,10 +205,13 @@ func (x *XmlBuilder) getScenarioContent(result *gauge_messages.ProtoSpecResult, 
 	ts.TestCases = append(ts.TestCases, testCase)
 }
 
-func (x *XmlBuilder) getTableDrivenScenarioContent(result *gauge_messages.ProtoSpecResult, tableDriven *gauge_messages.ProtoTableDrivenScenario, ts *JUnitTestSuite) {
+func (x *XmlBuilder) getTableDrivenScenarioContent(result *gauge_messages.ProtoSpecResult, tableProto *gauge_messages.ProtoItem, ts *JUnitTestSuite) {
+	tableDriven := tableProto.GetTableDrivenScenario()
+
 	if tableDriven.GetScenario() != nil {
 		scenario := tableDriven.GetScenario()
-		scenario.ScenarioHeading += " " + strconv.Itoa(int(tableDriven.GetTableRowIndex())+1)
+		tableRow := tableDriven.GetTable().GetRows()[tableDriven.GetTableRowIndex()]
+		scenario.ScenarioHeading += " [" + strings.Join(tableRow.GetCells(), ", ") + "]"
 		x.getScenarioContent(result, scenario, ts)
 	}
 }
